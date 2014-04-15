@@ -5,6 +5,7 @@
 
   var cur_video_blob = null;
   var fb_instance;
+  var surprise_bool = false;
 
   $(document).ready(function(){
     connect_to_chat_firebase();
@@ -51,10 +52,18 @@
     // bind submission box
     $("#submission input").keydown(function( event ) {
       if (event.which == 13) {			//Push Enter
-        if(has_emotions($(this).val())){
+        console.log(surprise_bool);
+        if(surprise_bool){ 
           fb_instance_stream.push({m:username+": " +$(this).val(), v:cur_video_blob, c: my_color});
+          window.alert("SURPRISE: You just sent a video!");
         }else{
           fb_instance_stream.push({m:username+": " +$(this).val(), c: my_color});
+        }
+        surprise_bool = false;
+        if(document.getElementById('surprise').checked) {
+          surprise_bool = true;
+          console.log("Surprise bool set to TRUE");
+          document.getElementById('surprise').checked = false;
         }
         $(this).val("");
       }
@@ -173,6 +182,17 @@
     }
     return false;
   }
+
+  // var video_requested = function(){
+  //   console.log("VIDEO REQUESTED CHECK TEST!");
+  //   if (document.getElementById('surprise').checked) {
+  //     window.alert("checked");
+  //     return true;
+  //   } else {
+  //     window.alert("You didn't check it!");
+  //     return false;
+  //   }
+  // }
 
 
   // some handy methods for converting blob to base 64 and vice versa
