@@ -79,7 +79,6 @@
         document.getElementById('upcomingVideo').checked = false;
         // console.log("upcomingVideo set to FALSE");
         if(document.getElementById('surprise').checked) {
-          
           document.getElementById('upcomingVideo').checked = true;
           console.log("upcomingVideo set to TRUE");
           document.getElementById('surprise').checked = false;
