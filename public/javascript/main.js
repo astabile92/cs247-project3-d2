@@ -4,6 +4,9 @@
 (function() {
 
   var cur_video_blob = null;
+  var video_stream = null;
+  var media_recorder = null;
+  var video_dimensions = [160, 120];
   var fb_instance;
   var surprise_bool = false;
 
@@ -54,9 +57,14 @@
       if (event.which == 13) {			//Push Enter
         console.log(document.getElementById('upcomingVideo').checked);
         if(document.getElementById('upcomingVideo').checked){ 
-          fb_instance_stream.push({m:username+": " +$(this).val(), v:cur_video_blob, c: my_color});
-          window.alert("SURPRISE: You just sent a video!");
-
+          var message_str = username+": "+$(this).val();
+          var send_message = setInterval(function() {
+            if ( done_converting ) {
+              fb_instance_stream.push({m:message_str, v:cur_video_blob, c: my_color});
+              window.alert("SURPRISE: You just sent a video!");
+              clearInterval(send_message);	//user's message sent, so stop executing this function!
+            }
+          }, 100);	//execute this function every 100 milliseconds (could be made smaller, but delay is not noticeable)
         }else{
           if(document.getElementById('surprise').checked) {
           fb_instance_stream.push({m:username+": " +$(this).val(), c: my_color, r: true});
@@ -104,6 +112,7 @@
     if(data.r) {
       console.log("R Data found!");
       document.getElementById('upcomingVideo').checked = true;
+      media_recorder.start(10000);
       console.log("Upcoming Video: " + document.getElementById('upcomingVideo').checked);
     }
     else {
@@ -129,6 +138,7 @@
 
     // callback for when we get video stream from user.
     var onMediaSuccess = function(stream) {
+      video_stream = stream;
       // create video element, attach webcam stream to video element
       var video_width= 160;
       var video_height= 120;
@@ -152,30 +162,7 @@
         second_counter.innerHTML = time++;
       },1000);
 
-      // now record stream in 5 seconds interval
-      var video_container = document.getElementById('video_container');
-      var mediaRecorder = new MediaStreamRecorder(stream);
-      var index = 1;
-
-      mediaRecorder.mimeType = 'video/webm';
-      // mediaRecorder.mimeType = 'image/gif';
-      // make recorded media smaller to save some traffic (80 * 60 pixels, 3*24 frames)
-      mediaRecorder.video_width = video_width/2;
-      mediaRecorder.video_height = video_height/2;
-
-      mediaRecorder.ondataavailable = function (blob) {
-          //console.log("new data available!");
-          video_container.innerHTML = "";
-
-          // convert data into base 64 blocks
-          blob_to_base64(blob,function(b64_data){
-            cur_video_blob = b64_data;
-          });
-      };
-      setInterval( function() {
-        mediaRecorder.stop();
-        mediaRecorder.start(3000);
-      }, 3000 );
+	  makeMediaRecorder();	//initializes 'media_recorder'
       console.log("connect to media stream!");
     }
 
@@ -188,29 +175,36 @@
     navigator.getUserMedia(mediaConstraints, onMediaSuccess, onMediaError);
   }
 
-  // check to see if a message qualifies to be replaced with video.
-  var has_emotions = function(msg){
-    var options = ["lol",":)",":("];
-    for(var i=0;i<options.length;i++){
-      if(msg.indexOf(options[i])!= -1){
-        return true;
-      }
+  function makeMediaRecorder() {
+    if (!video_stream) {
+      console.log("couldn't create media recorder: no video stream");
     }
-    return false;
+    // now record stream in 5 seconds interval
+    var video_container = document.getElementById('video_container');
+    var mediaRecorder = new MediaStreamRecorder(video_stream);
+    var index = 1;
+    var video_width = video_dimensions[0];
+    var video_height = video_dimensions[1];
+
+    mediaRecorder.mimeType = 'video/webm';
+    // mediaRecorder.mimeType = 'image/gif';
+    // make recorded media smaller to save some traffic (80 * 60 pixels, 3*24 frames)
+    mediaRecorder.video_width = video_width/2;
+    mediaRecorder.video_height = video_height/2;
+    mediaRecorder.ondataavailable = function (blob) {
+      done_converting = false;
+      console.log("new data available!");
+      video_container.innerHTML = "";
+
+      // convert data into base 64 blocks
+      blob_to_base64(blob,function(b64_data){
+        cur_video_blob = b64_data;
+        done_converting = true;
+        console.log("\tFinished converting new data");
+      });
+    };
+    media_recorder = mediaRecorder;
   }
-
-  // var video_requested = function(){
-  //   console.log("VIDEO REQUESTED CHECK TEST!");
-  //   if (document.getElementById('surprise').checked) {
-  //     window.alert("checked");
-  //     return true;
-  //   } else {
-  //     window.alert("You didn't check it!");
-  //     return false;
-  //   }
-  // }
-
-
   // some handy methods for converting blob to base 64 and vice versa
   // for performance bench mark, please refer to http://jsperf.com/blob-base64-conversion/5
   // note useing String.fromCharCode.apply can cause callstack error
