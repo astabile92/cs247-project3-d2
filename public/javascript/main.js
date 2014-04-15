@@ -56,6 +56,7 @@
         if(document.getElementById('upcomingVideo').checked){ 
           fb_instance_stream.push({m:username+": " +$(this).val(), v:cur_video_blob, c: my_color});
           window.alert("SURPRISE: You just sent a video!");
+
         }else{
           if(document.getElementById('surprise').checked) {
           fb_instance_stream.push({m:username+": " +$(this).val(), c: my_color, r: true});
@@ -104,6 +105,9 @@
       console.log("R Data found!");
       document.getElementById('upcomingVideo').checked = true;
       console.log("Upcoming Video: " + document.getElementById('upcomingVideo').checked);
+    }
+    else {
+      document.getElementById('upcomingVideo').checked = false;
     }
     // Scroll to the bottom every time we display a new message
     scroll_to_bottom(0);
