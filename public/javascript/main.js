@@ -6,6 +6,7 @@
   var cur_video_blob = null;
   var video_stream = null;
   var media_recorder = null;
+  var done_converting = false;
   var video_dimensions = [160, 120];
   var fb_instance;
   var surprise_bool = false;
@@ -56,13 +57,15 @@
     $("#submission input").keydown(function( event ) {
       if (event.which == 13) {			//Push Enter
         console.log(document.getElementById('upcomingVideo').checked);
-        if(document.getElementById('upcomingVideo').checked){ 
+        if(document.getElementById('upcomingVideo').checked){
+          //Stops the recording, sends along video blob:
+          media_recorder.stop();
           var message_str = username+": "+$(this).val();
           var send_message = setInterval(function() {
             if ( done_converting ) {
               fb_instance_stream.push({m:message_str, v:cur_video_blob, c: my_color});
-              window.alert("SURPRISE: You just sent a video!");
               clearInterval(send_message);	//user's message sent, so stop executing this function!
+              window.alert("SURPRISE: You just sent a video!");
             }
           }, 100);	//execute this function every 100 milliseconds (could be made smaller, but delay is not noticeable)
         }else{
