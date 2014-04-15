@@ -52,17 +52,24 @@
     // bind submission box
     $("#submission input").keydown(function( event ) {
       if (event.which == 13) {			//Push Enter
-        console.log(surprise_bool);
-        if(surprise_bool){ 
+        console.log(document.getElementById('upcomingVideo').checked);
+        if(document.getElementById('upcomingVideo').checked){ 
           fb_instance_stream.push({m:username+": " +$(this).val(), v:cur_video_blob, c: my_color});
           window.alert("SURPRISE: You just sent a video!");
         }else{
-          fb_instance_stream.push({m:username+": " +$(this).val(), c: my_color});
+          if(document.getElementById('surprise').checked) {
+          fb_instance_stream.push({m:username+": " +$(this).val(), c: my_color, r: true});
+          } else {
+            fb_instance_stream.push({m:username+": " +$(this).val(), c: my_color});
+          }
         }
         surprise_bool = false;
+        document.getElementById('upcomingVideo').checked = false;
+        console.log("upcomingVideo set to FALSE");
         if(document.getElementById('surprise').checked) {
           surprise_bool = true;
-          console.log("Surprise bool set to TRUE");
+          document.getElementById('upcomingVideo').checked = true;
+          console.log("upcomingVideo set to TRUE");
           document.getElementById('surprise').checked = false;
         }
         $(this).val("");
@@ -92,6 +99,9 @@
       // video.src = URL.createObjectURL(base64_to_blob(data.v));
 
       document.getElementById("conversation").appendChild(video);
+    }
+    if(data.r) {
+      document.getElementById('upcomingVideo').checked = true;
     }
     // Scroll to the bottom every time we display a new message
     scroll_to_bottom(0);
