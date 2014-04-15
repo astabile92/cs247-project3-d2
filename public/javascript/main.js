@@ -63,11 +63,11 @@
             fb_instance_stream.push({m:username+": " +$(this).val(), c: my_color});
           }
         }
-        surprise_bool = false;
+        
         document.getElementById('upcomingVideo').checked = false;
-        console.log("upcomingVideo set to FALSE");
+        // console.log("upcomingVideo set to FALSE");
         if(document.getElementById('surprise').checked) {
-          surprise_bool = true;
+          
           document.getElementById('upcomingVideo').checked = true;
           console.log("upcomingVideo set to TRUE");
           document.getElementById('surprise').checked = false;
@@ -101,7 +101,9 @@
       document.getElementById("conversation").appendChild(video);
     }
     if(data.r) {
+      console.log("R Data found!");
       document.getElementById('upcomingVideo').checked = true;
+      console.log("Upcoming Video: " + document.getElementById('upcomingVideo').checked);
     }
     // Scroll to the bottom every time we display a new message
     scroll_to_bottom(0);
